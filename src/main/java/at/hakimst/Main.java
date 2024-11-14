@@ -7,6 +7,8 @@ public class Main {
         selectAllDemo();
         insertStudentDemo();
         updateStudentDemo();
+        deleteStudentDemo();
+        findAllByName("zeck");
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
 
@@ -17,6 +19,61 @@ public class Main {
             }
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Treiber nicht gefunden: " + e.getMessage());
+        }
+    }
+
+    public static void findAllByName(String namePattern) {
+        System.out.println("Search by Name Demo with JDBC");
+        String connectionUrl = "jdbc:mysql://localhost:3306/jdbcdemo";
+        String user = "root";
+        String pwd = "";
+
+        try (Connection con = DriverManager.getConnection(connectionUrl, user, pwd)) {
+            System.out.println("Verbindung zur DB hergestellt!");
+
+            // SQL query with LIKE for pattern matching
+            String sql = "SELECT * FROM student WHERE name LIKE ?";
+            PreparedStatement preparedStatement = con.prepareStatement(sql);
+
+            // Setting the name pattern with wildcards for partial matching
+            preparedStatement.setString(1, "%" + namePattern + "%");
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            // Process the result set
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                System.out.println("Gefundener Student: [Id] " + id + ", [Name] " + name + ", [Email] " + email);
+            }
+        } catch (SQLException e) {
+            System.out.println("Fehler bei der Abfrage: " + e.getMessage());
+        }
+    }
+
+
+    public static void deleteStudentDemo() {
+        System.out.println("Delete Demo mit JDBC");
+        String connectionUrl = "jdbc:mysql://localhost:3306/jdbcdemo";
+        String user = "root";
+        String pwd = "";
+
+        try (Connection con = DriverManager.getConnection(connectionUrl, user, pwd)) {
+            System.out.println("Verbindung zur DB hergestellt!");
+
+            String deleteSql = "DELETE FROM students WHERE id = ?";
+            PreparedStatement preparedStatement = con.prepareStatement(deleteSql);
+            preparedStatement.setInt(1, 1); // ID of the student to delete
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Student erfolgreich gelöscht!");
+            } else {
+                System.out.println("Kein Student mit dieser ID gefunden.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Fehler beim Löschen des Studenten: " + e.getMessage());
         }
     }
 
